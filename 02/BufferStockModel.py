@@ -34,7 +34,7 @@ class BufferStockModelClass(EconModelClass):
         # saving
         par.r = 0.02 # interest rate
 
-        # grid
+        # grid: max and length of grid
         par.m_max = 20.0 # maximum point in resource grid
         par.Nm = 50 # number of grid points in resource grid    
 
@@ -56,10 +56,10 @@ class BufferStockModelClass(EconModelClass):
         sim = self.sim
         
         # a. asset grid
-        par.m_grid = nonlinspace(0.00001,par.m_max,par.Nm,1.1) # always have a bit of resources
+        par.m_grid = nonlinspace(0.00001,par.m_max,par.Nm,1.1) # always have a bit of resources, 1.1 just some convenient parameter
 
         # b. income shock grids
-        par.xi_grid,par.xi_weight = log_normal_gauss_hermite(par.sigma_trans,par.Nxi)
+        par.xi_grid,par.xi_weight = log_normal_gauss_hermite(par.sigma_trans,par.Nxi) # 
         par.psi_grid,par.psi_weight = log_normal_gauss_hermite(par.sigma_perm,par.Npsi)
 
         # b. solution arrays
@@ -105,7 +105,7 @@ class BufferStockModelClass(EconModelClass):
         for t in reversed(range(par.T-1)):
 
             # i. loop over state variable: resources in beginning of period
-            for im,resources in enumerate(par.m_grid):
+            for im,resources in enumerate(par.m_grid): #enumerate returns index, value 
 
                 # ii. find optimal consumption at this level of resources in this period t.
 
@@ -135,7 +135,7 @@ class BufferStockModelClass(EconModelClass):
         util = self.util(cons)
         
         # c. expected continuation value from savings
-        V_next = sol.V[t+1]
+        V_next = sol.V[t+1] #1D array 
         assets = resources - cons
         
         # loop over income shocks 
