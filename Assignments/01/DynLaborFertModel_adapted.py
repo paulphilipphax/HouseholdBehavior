@@ -75,7 +75,7 @@ class DynLaborFertModelClass(EconModelClass):
         # b. human capital grid
         par.k_grid = nonlinspace(0.0,par.k_max,par.Nk,1.1)
 
-        # c. number of children grid
+        # c. number of chilren grid
         par.n_grid = np.arange(par.Nn)
 
         # d. solution arrays
@@ -136,7 +136,7 @@ class DynLaborFertModelClass(EconModelClass):
                             res = minimize(obj,init_h,bounds=((hours_min,np.inf),),method='L-BFGS-B')
 
                             # store results
-                            sol.c[idx] = self.cons_last(res.x[0],assets,capital)
+                            sol.c[idx] = self.cons_last(res.x[0],assets,capital, kids)
                             sol.h[idx] = res.x[0]
                             sol.V[idx] = -res.fun
 
@@ -166,14 +166,15 @@ class DynLaborFertModelClass(EconModelClass):
                             sol.V[idx] = -res.fun
 
     # last period
-    def cons_last(self,hours,assets,capital):
+    def cons_last(self,hours,assets,capital, kids):
         par = self.par
         income = self.wage_func(capital,par.T-1) * hours + par.zeta * (1 + 0.1 * par.T-1) # added income spouse 
-        cons = assets + income
+        cost_child = par.theta * kids
+        cons = assets + income - cost_child
         return cons
 
     def obj_last(self,hours,assets,capital,kids):
-        cons = self.cons_last(hours,assets,capital)
+        cons = self.cons_last(hours,assets,capital, kids)
         return - self.util(cons,hours,kids)    
 
     # earlier periods
@@ -197,7 +198,8 @@ class DynLaborFertModelClass(EconModelClass):
         
         # d. *expected* continuation value from savings
         income = self.wage_func(capital,t) * hours + par.zeta * (1 + 0.1 * t) # added income spouse 
-        a_next = (1.0+par.r)*(assets + income - cons)
+        child_cost = par.theta * kids
+        a_next = (1.0+par.r)*(assets + income - cons- child_cost)
         k_next = capital + hours
 
         # no birth
@@ -226,7 +228,7 @@ class DynLaborFertModelClass(EconModelClass):
 
         beta = par.beta_0 + par.beta_1*kids
 
-        return (c)**(1.0+par.eta) / (1.0+par.eta) - beta*(hours)**(1.0+par.gamma) / (1.0+par.gamma) - par.theta*kids
+        return (c)**(1.0+par.eta) / (1.0+par.eta) - beta*(hours)**(1.0+par.gamma) / (1.0+par.gamma)
 
     def wage_func(self,capital,t):
         # after tax wage rate
